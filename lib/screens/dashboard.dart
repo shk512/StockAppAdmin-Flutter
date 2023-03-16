@@ -20,7 +20,7 @@ class _DashboardState extends State<Dashboard> {
   }
   getCompany(){
     setState(() {
-      company=FirebaseFirestore.instance.collection("user").snapshots();
+      company=FirebaseFirestore.instance.collection("company").snapshots();
     });
   }
   @override
