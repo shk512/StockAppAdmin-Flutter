@@ -17,14 +17,13 @@ class CompanyRegister extends StatefulWidget {
 
 class _CompanyRegisterState extends State<CompanyRegister> {
   bool isLoading = false;
-  String email = "";
-  String password = "";
-  String companyName = "";
-  String packageType = "";
-  Package package = Package.Monthly;
+  TextEditingController email= TextEditingController();
+  TextEditingController password=TextEditingController();
+  TextEditingController companyName= TextEditingController();
+  TextEditingController packageType= TextEditingController();
   TextEditingController packageEndsDate = TextEditingController();
+  Package package = Package.Monthly;
   Auth auth = Auth();
-
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -40,25 +39,25 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Form(
             key: formKey,
             child: Column(
               children: [
-                textFields(Icon(Icons.mail), "Email", "john@gmail.com", email),
+                textFields(const Icon(Icons.mail), "Email", "john@gmail.com", email),
                 const SizedBox(height: 20),
                 textFields(
-                    Icon(Icons.lock), "Password", "Minimum six characters",
+                    const Icon(Icons.lock), "Password", "Minimum six characters",
                     password),
                 const SizedBox(height: 20),
                 textFields(
-                    Icon(Icons.warehouse), "Company Name", "e.g. Candy Land",
+                    const Icon(Icons.warehouse), "Company Name", "e.g. Candy Land",
                     companyName),
                 const SizedBox(height: 20),
-                Text("Select Package",
+                const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.start,),
                 radioButtons("Monthly", Package.Monthly),
@@ -70,20 +69,20 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                     onPressed: () {
                       if(package==Package.Yearly){
                         setState(() {
-                          packageType="Yearly";
+                          packageType.text="Yearly";
                         });
                       }else if(package==Package.Monthly){
                         setState(() {
-                          packageType="Monthly";
+                          packageType.text="Monthly";
                         });
                       }else if(package==Package.Lifetime){
                         setState(() {
-                          packageType="LifeTime";
+                          packageType.text="LifeTime";
                           packageEndsDate.text="";
                         });
                       }
                       signup();
-                    }, child: Text("Register"))
+                    }, child: const Text("Register"))
               ],
             ),),
         ),
@@ -92,7 +91,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
   }
 
   Widget textFields(Icon icon, String labelName, String tipName,
-      String control) {
+      TextEditingController control) {
     return Row(
       children: [
         icon,
@@ -101,19 +100,17 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         ),
         Expanded(
           child: TextFormField(
+            controller: control,
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
               labelText: labelName,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  letterSpacing: 1),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                letterSpacing: 1,
+              ),
               hintText: tipName,
             ),
-            onChanged: (val) {
-              setState(() {
-                control = val;
-              });
-            },
             validator: (val) {
               if (control == password) {
                 if (val!.length < 6) {
@@ -135,6 +132,9 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                 } else {
                   return "Invalid";
                 }
+              }
+              else {
+                return null;
               }
             },
           ),
@@ -172,7 +172,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
     return ListTile(
         title: Text(
           name,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: Radio(
             value: type,
@@ -189,9 +189,9 @@ class _CompanyRegisterState extends State<CompanyRegister> {
       setState(() {
         isLoading=true;
       });
-      await auth.registerCompany(email, password).then((value)async{
-        if(value.toString()!="The email address is badly formatted."){
-          await DB(id: value.toString()).saveCompany(companyName,email,packageType,packageEndsDate.text);
+      await auth.registerCompany(email.text, password.text).then((value)async{
+        if(value!=null){
+          await DB(id: value.toString()).saveCompany(companyName.text,email.text,packageType.text,packageEndsDate.text);
           Navigator.pop(context);
           showSnackbar(context, Colors.cyan, "Registered Successfully!");
         }else{

@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:custom_switch/custom_switch.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:stock_admin/utils/routes.dart';
 
@@ -33,8 +31,8 @@ class _DashboardState extends State<Dashboard> {
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: Icon(Icons.add),
-        label: Text("Company"),
+        icon: const Icon(Icons.add),
+        label: const Text("Company"),
         onPressed: (){
           Navigator.pushNamed(context, Routes.companyRegister);
         },
@@ -52,20 +50,16 @@ class _DashboardState extends State<Dashboard> {
               child: CircularProgressIndicator(),
             );
           }
+          if(!snapshot.hasData){
+            return const Center(child: Text("No Data Found"),);
+          }
           if(snapshot.hasData){
             return ListView.builder(
                 itemCount: snapshot.data.docs.length,
                 itemBuilder: (context,index){
-                  return ListTile(
-                    title: const Text("Company Name"),
-                    subtitle: const Text("Owner Name"),
-                    trailing: CustomSwitch(
-                      value: isPackageActive,
-                      activeColor: Colors.cyan,
-                      onChanged: (val){
-                        isPackageActive=val;
-                      },
-                    )
+                  return const ListTile(
+                    title: Text("Company Name"),
+                    subtitle: Text("Owner Name")
                   );
                 });
           }else{

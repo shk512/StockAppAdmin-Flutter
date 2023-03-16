@@ -16,7 +16,8 @@ class DB{
       "packageType":packageType,
       "packageEndsDate":packageEndsDate,
       "employee":[],
-      "area":[]
+      "area":[],
+      "isPackageActive":true
     });
     return true;
   }
