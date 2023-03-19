@@ -40,8 +40,8 @@ dependencies:
   firebase_auth: ^4.1.2
   cloud_firestore: ^4.0.5
   shared_preferences: ^2.0.18
-  email_validator: ^2.1.17
-  custom_switch: ^0.0.1
+  email_validator: ^2.1.16
+  flutter_switch: ^0.3.2
   intl: ^0.17.0
   pinput: ^2.2.31
 

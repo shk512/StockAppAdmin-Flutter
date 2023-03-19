@@ -7,7 +7,7 @@ class Auth{
   Future<Object?> registerCompany(String email, String pass) async {
     try {
       User user = (await firebaseAuth.createUserWithEmailAndPassword(
-          email: email, password: pass)).user!;
+          email: email.trim(), password: pass)).user!;
       if(user!=null){
         return user.uid;
       }
