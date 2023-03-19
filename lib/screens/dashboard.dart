@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_switch/flutter_switch.dart';
+import 'package:stock_admin/screens/company_details.dart';
+import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/routes.dart';
 
 class Dashboard extends StatefulWidget {
@@ -11,7 +14,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   Stream<QuerySnapshot>? company;
-  late bool isPackageActive;
+  bool isPackageActive=false;
 
   @override
   void initState() {
@@ -27,6 +30,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         title: const Text("ADMIN"),
         centerTitle: true,
       ),
@@ -57,9 +61,20 @@ class _DashboardState extends State<Dashboard> {
             return ListView.builder(
                 itemCount: snapshot.data.docs.length,
                 itemBuilder: (context,index){
-                  return const ListTile(
-                    title: Text("Company Name"),
-                    subtitle: Text("Owner Name")
+                  return ListTile(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>CompanyDetails(companyId: snapshot.data.docs[index]['companyId'])));
+                    },
+                    title: Text("${snapshot.data.docs[index]['companyName']}"),
+                    subtitle: Text("${snapshot.data.docs[index]['companyId']}"),
+                    trailing: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: snapshot.data.docs[index]['isPackageActive']?Colors.green:Colors.red,
+                      ),
+                    ),
                   );
                 });
           }else{
@@ -70,5 +85,8 @@ class _DashboardState extends State<Dashboard> {
         }
       ),
     );
+  }
+  updatePackageStatus(bool value,String companyId)async{
+    await DB(id: companyId).updatePackageStatus(value);
   }
 }

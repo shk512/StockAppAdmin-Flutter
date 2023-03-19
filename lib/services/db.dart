@@ -7,18 +7,20 @@ class DB{
   //REFERENCE
   final companyCollection=FirebaseFirestore.instance.collection("company");
   //save Company
-  Future saveCompany(String companyName,String email, String packageType, String packageEndsDate)async{
-    await companyCollection.doc(id).set({
-      "companyName":companyName,
-      "companyId":id,
-      "userRole":"admin",
-      "mail":email,
-      "packageType":packageType,
-      "packageEndsDate":packageEndsDate,
-      "employee":[],
-      "area":[],
-      "isPackageActive":true
-    });
+  Future saveCompany(Map<String,dynamic> mapData)async{
+    await companyCollection.doc(id).set(mapData);
     return true;
+  }
+
+  //Update Package Status
+ updatePackageStatus(bool value)async{
+    await companyCollection.doc(id).update({
+      "isPackageActive":value,
+    });
+  }
+
+  //Get Company Details
+  getCompanyDetails(){
+    return companyCollection.doc(id).get();
   }
 }

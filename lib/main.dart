@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:stock_admin/screens/company_details.dart';
 import 'package:stock_admin/screens/company_register.dart';
 import 'package:stock_admin/screens/dashboard.dart';
 import 'package:stock_admin/utils/routes.dart';
