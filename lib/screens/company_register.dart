@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:intl/intl.dart';
-import 'package:stock_admin/Model/Company.dart';
+import 'package:stock_admin/Model/company.dart';
 import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/enum.dart';
 import 'package:stock_admin/utils/snackbar.dart';
@@ -192,7 +192,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
       });
       await auth.registerCompany(email.text, password.text).then((value)async{
         if(value!=null){
-          await DB(id: value.toString()).saveCompany(Company(area: [], employee: [], isPackageActive: true, companyId: value.toString(), packageEndsDate: packageEndsDate.text, packageType: packageType.text, email: email.text, companyName: companyName.text).toJson());
+          await DB(id: value.toString()).saveCompany(Company(isPackageActive: true, companyId: value.toString(), packageEndsDate: packageEndsDate.text, packageType: packageType.text, email: email.text, companyName: companyName.text).toJson());
           Navigator.pop(context);
           showSnackbar(context, Colors.cyan, "Registered Successfully!");
         }else{

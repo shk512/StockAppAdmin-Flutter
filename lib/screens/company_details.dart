@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:stock_admin/Model/Company.dart';
+import 'package:stock_admin/Model/company.dart';
 import 'package:stock_admin/services/db.dart';
 
 class CompanyDetails extends StatefulWidget {
@@ -12,6 +12,7 @@ class CompanyDetails extends StatefulWidget {
 }
 
 class _CompanyDetailsState extends State<CompanyDetails> {
+  var company;
 
   @override
   void initState() {
@@ -21,7 +22,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   getCompanyDetails()async{
     await DB(id: widget.companyId).getCompanyDetails().then((val){
       setState(() {
-      Company.fromJson(val);
+        company=Company.fromJson(val);
       });
     });
   }
@@ -41,8 +42,8 @@ class _CompanyDetailsState extends State<CompanyDetails> {
           padding: const EdgeInsets.symmetric(horizontal:10,vertical: 5),
           child: Column(
             children: [
-              displayFunction("Company Name",Company._companyName,Icon(Icons.warehouse)),
-              displayFunction("Email",company.mail,Icon(Icons.email)),
+              displayFunction("Company Name",company.companyName,Icon(Icons.warehouse)),
+              displayFunction("Email",company.email,Icon(Icons.email)),
               displayFunction("Package",company.packageType,Icon(Icons.timer)),
               company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",company.packageEndsDate,Icon(Icons.date_range)),
               SizedBox(height: 20),
