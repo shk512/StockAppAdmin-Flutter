@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 import 'package:stock_admin/screens/company_details.dart';
-import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/routes.dart';
 
 class Dashboard extends StatefulWidget {
@@ -31,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("ADMIN"),
+        title: const Text("ADMIN",style:  TextStyle(color: Colors.white,fontWeight: FontWeight.bold,letterSpacing: 2),),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -65,7 +63,7 @@ class _DashboardState extends State<Dashboard> {
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(builder: (context)=>CompanyDetails(companyId: snapshot.data.docs[index]['companyId'])));
                     },
-                    title: Text("${snapshot.data.docs[index]['companyName']}"),
+                    title: Text("${snapshot.data.docs[index]['companyName']} - ${snapshot.data.docs[index]['city']}"),
                     subtitle: Text("${snapshot.data.docs[index]['companyId']}"),
                     trailing: Container(
                       width: 8,
@@ -85,8 +83,5 @@ class _DashboardState extends State<Dashboard> {
         }
       ),
     );
-  }
-  updatePackageStatus(bool value,String companyId)async{
-    await DB(id: companyId).updatePackageStatus(value);
   }
 }

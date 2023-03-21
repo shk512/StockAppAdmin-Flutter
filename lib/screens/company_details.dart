@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:stock_admin/Model/company.dart';
 import 'package:stock_admin/services/db.dart';
+import 'package:stock_admin/utils/snackbar.dart';
 
 class CompanyDetails extends StatefulWidget {
   final String companyId;
@@ -12,7 +13,7 @@ class CompanyDetails extends StatefulWidget {
 }
 
 class _CompanyDetailsState extends State<CompanyDetails> {
-  Map<String ,dynamic> mapData={};
+  var mapData;
   @override
   void initState() {
     super.initState();
@@ -21,63 +22,66 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   getCompanyDetails()async{
     await DB(id: widget.companyId).getCompanyDetails().then((val){
       setState(() {
-        mapData=val as Map<String,dynamic>;
+        Company.fromJson(val);
       });
     });
-    Company.fromJson(mapData);
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Details"),
+        title: const Text("Details",style:  TextStyle(color: Colors.white,fontWeight: FontWeight.bold,letterSpacing: 2),),
         centerTitle: true,
         elevation: 0,
         leading: IconButton(onPressed: (){
           Navigator.pop(context);
-        }, icon: const Icon(CupertinoIcons.back)),
+        }, icon: const Icon(CupertinoIcons.back,color: Colors.white,)),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal:10,vertical: 5),
-          child: Column(
+          child: Company.companyId!=""
+              ?Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              displayFunction("ID", Company.companyId, Icon(Icons.perm_identity)),
-              displayFunction("Company Name",Company.companyName,Icon(Icons.warehouse)),
-              displayFunction("City",Company.city,Icon(Icons.location_city_outlined)),
-              displayFunction("Package",Company.packageType,Icon(Icons.timer)),
-              Company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",Company.packageEndsDate,Icon(Icons.date_range)),
-              SizedBox(height: 20),
+              displayFunction("ID", Company.companyId, const Icon(Icons.perm_identity)),
+              displayFunction("Company Name",Company.companyName,const Icon(Icons.warehouse)),
+              displayFunction("City",Company.city,const Icon(Icons.location_city_outlined)),
+              displayFunction("Status", Company.isPackageActive?"Active":"InActive", const Icon(Icons.notifications_active)),
+              displayFunction("Contact", Company.contact, const Icon(Icons.phone)),
+              displayFunction("WhatsApp", Company.whatsapp, const Icon(Icons.chat)),
+              displayFunction("Package",Company.packageType,const Icon(Icons.timer)),
+              Company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",Company.packageEndsDate,const Icon(Icons.date_range)),
+              const SizedBox(height: 20),
               ElevatedButton(onPressed: (){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
-                    title: Text("Message"),
+                    title: const Text("Message"),
                     content: Text(Company.isPackageActive?"Are you sure to cancel the membership":"Are you sure to enable the membership"),
                     actions: [
                       ElevatedButton(onPressed: (){
                         Navigator.pop(context);
-                      }, child: Text("Cancel")),
+                      }, child: const Text("Cancel")),
                       ElevatedButton(onPressed: (){
                         updatePackage(Company.isPackageActive?false:true);
                         Navigator.pop(context);
-                      }, child: Text("OK")),
+                      }, child: const Text("OK")),
                     ],
                   );
                 });
               }, child: Text(Company.isPackageActive?"Turn Off Membership":"Turn On Membership"))
             ],
-          ),
+          )
+          :Center(child: const CircularProgressIndicator()),
         ),
-      ),
     );
   }
   Widget displayFunction(String title, String value, Icon icon){
     return Row(
       children: [
         Expanded(child: icon),
-        SizedBox(width: 10),
-        Expanded(child: Text(title,style: TextStyle(fontWeight: FontWeight.bold),)),
-        SizedBox(width: 10),
+        const SizedBox(width: 4),
+        Expanded(child: Text(title,style: const TextStyle(fontWeight: FontWeight.bold),)),
+        const SizedBox(width: 10),
         Expanded(child: Text(value)),
 
       ],
@@ -86,7 +90,8 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   updatePackage(bool value)async{
     await DB(id: widget.companyId).updatePackageStatus(value);
     setState(() {
-
+      Company.isPackageActive=value;
     });
+    showSnackbar(context, Colors.cyan,Company.isPackageActive?"Package has been active":"Package has been in-active");
   }
 }

@@ -11,6 +11,11 @@ class DB{
   //save Company
   Future saveCompany(Map<String,dynamic> mapData)async{
     await companyCollection.doc(id).set(mapData);
+    return true;
+  }
+
+  //Save Company ID in List
+  Future saveCompanyId()async{
     await companyArrayCollection.doc("adminArray").update({
       "companyId":FieldValue.arrayUnion([id]),
     });

@@ -16,6 +16,8 @@ class CompanyRegister extends StatefulWidget {
 class _CompanyRegisterState extends State<CompanyRegister> {
   bool isLoading = false;
   TextEditingController city= TextEditingController();
+  TextEditingController contact=TextEditingController();
+  TextEditingController whatsApp=TextEditingController();
   TextEditingController companyName= TextEditingController();
   TextEditingController packageType= TextEditingController();
   TextEditingController packageEndsDate = TextEditingController();
@@ -49,6 +51,9 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                 const SizedBox(height: 20),
                 textFields(const Icon(Icons.location_city), "City", "City Name...", city),
                 const SizedBox(height: 20),
+                textFields(const Icon((Icons.phone)), "Contact","923001234567", contact),
+                const SizedBox(height: 20),
+                textFields(const Icon(Icons.message), "Whatsapp", "923001234567", whatsApp),
                 const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.start,),
@@ -159,13 +164,20 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         isLoading=true;
       });
       String companyId=DateTime.now().microsecondsSinceEpoch.toString();
-      await DB(id: companyId).saveCompany(Company(packageEndsDate.text, packageType.text, city.text, companyName.text).toJson()).then((value){
+      await DB(id: companyId).saveCompany(Company(contact.text,whatsApp.text,companyId,packageEndsDate.text, packageType.text, city.text, companyName.text).toJson()).then((value)async{
         if(value){
-          setState(() {
-            isLoading=false;
+          await DB(id: companyId).saveCompanyId().then((value){
+            if(value){
+              Navigator.pop(context);
+              showSnackbar(context, Colors.cyan, "Registered Successfully!");
+            }else{
+              setState(() {
+                isLoading=false;
+              });
+              showSnackbar(context, Colors.red, "Error. Please Try Again!");
+            }
           });
-          Navigator.pop(context);
-          showSnackbar(context, Colors.cyan, "Registered Successfully!");
+
         }else{
           setState(() {
             isLoading=false;

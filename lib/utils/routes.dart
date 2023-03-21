@@ -1,3 +1,3 @@
 class Routes{
-  static final companyRegister="/companyRegister";
+  static const companyRegister="/companyRegister";
 }
