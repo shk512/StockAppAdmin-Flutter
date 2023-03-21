@@ -12,8 +12,7 @@ class CompanyDetails extends StatefulWidget {
 }
 
 class _CompanyDetailsState extends State<CompanyDetails> {
-  var company;
-
+  Map<String ,dynamic> mapData={};
   @override
   void initState() {
     super.initState();
@@ -22,9 +21,10 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   getCompanyDetails()async{
     await DB(id: widget.companyId).getCompanyDetails().then((val){
       setState(() {
-        company=Company.fromJson(val);
+        mapData=val as Map<String,dynamic>;
       });
     });
+    Company.fromJson(mapData);
   }
   @override
   Widget build(BuildContext context) {
@@ -42,28 +42,29 @@ class _CompanyDetailsState extends State<CompanyDetails> {
           padding: const EdgeInsets.symmetric(horizontal:10,vertical: 5),
           child: Column(
             children: [
-              displayFunction("Company Name",company.companyName,Icon(Icons.warehouse)),
-              displayFunction("Email",company.email,Icon(Icons.email)),
-              displayFunction("Package",company.packageType,Icon(Icons.timer)),
-              company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",company.packageEndsDate,Icon(Icons.date_range)),
+              displayFunction("ID", Company.companyId, Icon(Icons.perm_identity)),
+              displayFunction("Company Name",Company.companyName,Icon(Icons.warehouse)),
+              displayFunction("City",Company.city,Icon(Icons.location_city_outlined)),
+              displayFunction("Package",Company.packageType,Icon(Icons.timer)),
+              Company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",Company.packageEndsDate,Icon(Icons.date_range)),
               SizedBox(height: 20),
               ElevatedButton(onPressed: (){
                 showDialog(context: context, builder: (context){
                   return AlertDialog(
                     title: Text("Message"),
-                    content: Text(company.isPackageActive?"Are you sure to cancel the membership":"Are you sure to enable the membership"),
+                    content: Text(Company.isPackageActive?"Are you sure to cancel the membership":"Are you sure to enable the membership"),
                     actions: [
                       ElevatedButton(onPressed: (){
                         Navigator.pop(context);
                       }, child: Text("Cancel")),
                       ElevatedButton(onPressed: (){
-                        updatePackage(company.isPackageActive?false:true);
+                        updatePackage(Company.isPackageActive?false:true);
                         Navigator.pop(context);
                       }, child: Text("OK")),
                     ],
                   );
                 });
-              }, child: Text(company.isPackageActive?"Turn Off Membership":"Turn On Membership"))
+              }, child: Text(Company.isPackageActive?"Turn Off Membership":"Turn On Membership"))
             ],
           ),
         ),

@@ -1,13 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:intl/intl.dart';
 import 'package:stock_admin/Model/company.dart';
 import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/enum.dart';
 import 'package:stock_admin/utils/snackbar.dart';
-
-import '../services/auth.dart';
 
 class CompanyRegister extends StatefulWidget {
   const CompanyRegister({Key? key}) : super(key: key);
@@ -18,13 +15,11 @@ class CompanyRegister extends StatefulWidget {
 
 class _CompanyRegisterState extends State<CompanyRegister> {
   bool isLoading = false;
-  TextEditingController email= TextEditingController();
-  TextEditingController password=TextEditingController();
+  TextEditingController city= TextEditingController();
   TextEditingController companyName= TextEditingController();
   TextEditingController packageType= TextEditingController();
   TextEditingController packageEndsDate = TextEditingController();
   Package package = Package.Monthly;
-  Auth auth = Auth();
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -48,15 +43,11 @@ class _CompanyRegisterState extends State<CompanyRegister> {
             key: formKey,
             child: Column(
               children: [
-                textFields(const Icon(Icons.mail), "Email", "john@gmail.com", email),
-                const SizedBox(height: 20),
-                textFields(
-                    const Icon(Icons.lock), "Password", "Minimum six characters",
-                    password),
-                const SizedBox(height: 20),
                 textFields(
                     const Icon(Icons.warehouse), "Company Name", "e.g. Candy Land",
                     companyName),
+                const SizedBox(height: 20),
+                textFields(const Icon(Icons.location_city), "City", "City Name...", city),
                 const SizedBox(height: 20),
                 const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -113,31 +104,8 @@ class _CompanyRegisterState extends State<CompanyRegister> {
               hintText: tipName,
             ),
             validator: (val) {
-              if (control == password) {
-                if (val!.length < 6) {
-                  return "Invalid";
-                } else {
-                  return null;
-                }
-              }
-              if (control == companyName) {
-                if (val!.isNotEmpty) {
-                  return null;
-                } else {
-                  return "Invalid";
-                }
-              }
-              if (control == email) {
-                if (EmailValidator.validate(val!)) {
-                  return null;
-                } else {
-                  return "Invalid";
-                }
-              }
-              else {
-                return null;
-              }
-            },
+              return val!.isNotEmpty?null:"Invalid";
+            }
           ),
         ),
         const SizedBox(
@@ -190,16 +158,19 @@ class _CompanyRegisterState extends State<CompanyRegister> {
       setState(() {
         isLoading=true;
       });
-      await auth.registerCompany(email.text, password.text).then((value)async{
-        if(value!=null){
-          await DB(id: value.toString()).saveCompany(Company(isPackageActive: true, companyId: value.toString(), packageEndsDate: packageEndsDate.text, packageType: packageType.text, email: email.text, companyName: companyName.text).toJson());
+      String companyId=DateTime.now().microsecondsSinceEpoch.toString();
+      await DB(id: companyId).saveCompany(Company(packageEndsDate.text, packageType.text, city.text, companyName.text).toJson()).then((value){
+        if(value){
+          setState(() {
+            isLoading=false;
+          });
           Navigator.pop(context);
           showSnackbar(context, Colors.cyan, "Registered Successfully!");
         }else{
           setState(() {
             isLoading=false;
           });
-          showSnackbar(context, Colors.red, value.toString());
+          showSnackbar(context, Colors.red, "Error. Please Try Again!");
         }
       });
     }

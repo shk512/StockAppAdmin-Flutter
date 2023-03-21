@@ -6,9 +6,14 @@ class DB{
 
   //REFERENCE
   final companyCollection=FirebaseFirestore.instance.collection("company");
+  final companyArrayCollection=FirebaseFirestore.instance.collection("companyArray");
+
   //save Company
   Future saveCompany(Map<String,dynamic> mapData)async{
     await companyCollection.doc(id).set(mapData);
+    await companyArrayCollection.doc("adminArray").update({
+      "companyId":FieldValue.arrayUnion([id]),
+    });
     return true;
   }
 

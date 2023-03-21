@@ -1,33 +1,39 @@
 class Company{
-  late String companyName;
-  late String email;
-  late String packageType;
-  late String packageEndsDate;
-  late bool isPackageActive ;
-  late String companyId;
-  Company({required this.isPackageActive,required this.companyId,required this.packageEndsDate,required this.packageType,required this.email,required this.companyName});
+  static String companyId="";
+  static String companyName="";
+  static String city="";
+  static String packageType="";
+  static String packageEndsDate="";
+  static bool isPackageActive=true;
+  static List employee=[];
+  static List area=[];
+
+  Company(String packageEndsDate1,String packageType1,String city1,String companyName1){
+    packageEndsDate=packageEndsDate1;
+    packageType1=packageType;
+    city=city1;
+    companyName=companyName1;
+  }
 
   Map<String,dynamic> toJson(){
    return {
-     "companyName":companyName,
      "companyId":companyId,
-     "mail":email,
+     "companyName":companyName,
+     "city":city,
      "packageType":packageType,
      "packageEndsDate":packageEndsDate,
      "isPackageActive":isPackageActive,
-     "employeeUsername":[],
-     "area":[]
+     "employeeUsername":employee,
+     "area":area
    };
   }
 
-  factory Company.fromJson(Map<String,dynamic> mapData){
-   return Company(
-       isPackageActive: mapData['isPackageActive'],
-       companyId: mapData['companyId'].toString(),
-       packageEndsDate: mapData['packageEndsDate'].toString(),
-       packageType: mapData['packageType'].toString(),
-       email: mapData['mail'].toString(),
-       companyName: mapData['companyName'].toString()
-   );
+  static fromJson(Map<String,dynamic> mapData){
+    companyId=mapData['companyId'];
+    isPackageActive= mapData['isPackageActive'];
+    packageEndsDate= mapData['packageEndsDate'];
+    packageType= mapData['packageType'];
+    city= mapData['city'];
+    companyName= mapData['companyName'];
   }
 }
