@@ -21,7 +21,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
   TextEditingController companyName= TextEditingController();
   TextEditingController packageType= TextEditingController();
   TextEditingController packageEndsDate = TextEditingController();
-  Package package = Package.Monthly;
+  PackageType package = PackageType.Monthly;
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -57,22 +57,22 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                 const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.start,),
-                radioButtons("Monthly", Package.Monthly),
-                radioButtons("Yearly", Package.Yearly),
-                radioButtons("Lifetime", Package.Lifetime),
-                package == Package.Lifetime ? Container() : date(),
+                radioButtons("Monthly", PackageType.Monthly),
+                radioButtons("Yearly", PackageType.Yearly),
+                radioButtons("Lifetime", PackageType.Lifetime),
+                package == PackageType.Lifetime ? Container() : date(),
                 const SizedBox(height: 40),
                 OutlinedButton(
                     onPressed: () {
-                      if(package==Package.Yearly){
+                      if(package==PackageType.Yearly){
                         setState(() {
                           packageType.text="Yearly";
                         });
-                      }else if(package==Package.Monthly){
+                      }else if(package==PackageType.Monthly){
                         setState(() {
                           packageType.text="Monthly";
                         });
-                      }else if(package==Package.Lifetime){
+                      }else if(package==PackageType.Lifetime){
                         setState(() {
                           packageType.text="LifeTime";
                           packageEndsDate.text="";
@@ -142,7 +142,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
           }
         });
   }
-  Widget radioButtons(String name, Package type,) {
+  Widget radioButtons(String name, PackageType type,) {
     return ListTile(
         title: Text(
           name,
@@ -151,7 +151,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         leading: Radio(
             value: type,
             groupValue: package,
-            onChanged: (Package? value) {
+            onChanged: (PackageType? value) {
               setState(() {
                 package = value!;
               });

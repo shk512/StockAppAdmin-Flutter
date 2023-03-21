@@ -23,9 +23,10 @@ class DB{
   }
 
   //Update Package Status
- updatePackageStatus(bool value)async{
+ updatePackageStatus(bool value,String date)async{
     await companyCollection.doc(id).update({
       "isPackageActive":value,
+      "packageEndsDate":date
     });
   }
 

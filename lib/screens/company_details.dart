@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:stock_admin/Model/company.dart';
 import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/snackbar.dart';
+import 'package:whatsapp_share2/whatsapp_share2.dart';
 
 class CompanyDetails extends StatefulWidget {
   final String companyId;
@@ -14,6 +16,7 @@ class CompanyDetails extends StatefulWidget {
 
 class _CompanyDetailsState extends State<CompanyDetails> {
   var mapData;
+  TextEditingController date=TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -38,60 +41,76 @@ class _CompanyDetailsState extends State<CompanyDetails> {
         }, icon: const Icon(CupertinoIcons.back,color: Colors.white,)),
       ),
       body: SingleChildScrollView(
-          child: Company.companyId!=""
-              ?Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              displayFunction("ID", Company.companyId, const Icon(Icons.perm_identity)),
-              displayFunction("Company Name",Company.companyName,const Icon(Icons.warehouse)),
-              displayFunction("City",Company.city,const Icon(Icons.location_city_outlined)),
-              displayFunction("Status", Company.isPackageActive?"Active":"InActive", const Icon(Icons.notifications_active)),
-              displayFunction("Contact", Company.contact, const Icon(Icons.phone)),
-              displayFunction("WhatsApp", Company.whatsapp, const Icon(Icons.chat)),
-              displayFunction("Package",Company.packageType,const Icon(Icons.timer)),
-              Company.packageType=="LifeTime"?Container():displayFunction("Package Ends Date",Company.packageEndsDate,const Icon(Icons.date_range)),
-              const SizedBox(height: 20),
-              ElevatedButton(onPressed: (){
-                showDialog(context: context, builder: (context){
-                  return AlertDialog(
-                    title: const Text("Message"),
-                    content: Text(Company.isPackageActive?"Are you sure to cancel the membership":"Are you sure to enable the membership"),
-                    actions: [
+          child: Center(
+            child:Company.companyId!=""
+                ?Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      displayFunction("ID", Company.companyId, const Icon(Icons.perm_identity)),
+                      displayFunction("Company Name",Company.companyName,const Icon(Icons.warehouse)),
+                      displayFunction("City",Company.city,const Icon(Icons.location_city_outlined)),
+                      displayFunction("Status", Company.isPackageActive?"Active":"InActive", const Icon(Icons.notifications_active)),
+                      displayFunction("Contact", Company.contact, const Icon(Icons.phone)),
+                      displayFunction("WhatsApp", Company.whatsapp, const Icon(Icons.chat)),
+                      displayFunction("Package",Company.packageType,const Icon(Icons.timer)),
+                      Company.packageType=="LifeTime"||Company.packageEndsDate==""?Container():displayFunction("Package Ends Date",Company.packageEndsDate,const Icon(Icons.date_range)),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                          onPressed: ()async{
+                            if(!Company.isPackageActive&&Company.packageType=="LifeTime"){
+                              updatePackage(true, "");
+                            } else if(!Company.isPackageActive) {
+                              DateTime? datePicker = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100));
+                                if (datePicker != null) {
+                                  setState(() {
+                                    date.text =
+                                    DateFormat("dd-MM-yyyy").format(datePicker);
+                                  });
+                             updatePackage(true, date.text);
+                          }
+                        }else{
+                          updatePackage(false, "");
+                        }
+                        }, child: Text(Company.isPackageActive?"Turn Off Membership":"Turn On Membership")),
+                      const SizedBox(height: 20,),
                       ElevatedButton(onPressed: (){
-                        Navigator.pop(context);
-                      }, child: const Text("Cancel")),
-                      ElevatedButton(onPressed: (){
-                        updatePackage(Company.isPackageActive?false:true);
-                        Navigator.pop(context);
-                      }, child: const Text("OK")),
-                    ],
-                  );
-                });
-              }, child: Text(Company.isPackageActive?"Turn Off Membership":"Turn On Membership"))
+                        shareId();
+                      }, child: const Text("Share Id"))
             ],
-          )
-          :Center(child: const CircularProgressIndicator()),
+          ),
+                )
+          :const CircularProgressIndicator()),
         ),
     );
   }
   Widget displayFunction(String title, String value, Icon icon){
     return Row(
       children: [
-        Expanded(child: icon),
-        const SizedBox(width: 4),
-        Expanded(child: Text(title,style: const TextStyle(fontWeight: FontWeight.bold),)),
-        const SizedBox(width: 10),
-        Expanded(child: Text(value)),
-
+        Expanded(flex:1,child: icon),
+        Expanded(flex:2,child: Text(title,style: const TextStyle(fontWeight: FontWeight.bold),)),
+        Expanded(flex:2,child: Text(value)),
       ],
     );
   }
-  updatePackage(bool value)async{
-    await DB(id: widget.companyId).updatePackageStatus(value);
+  updatePackage(bool value,String date)async{
+    await DB(id: widget.companyId).updatePackageStatus(value,date);
     setState(() {
       Company.isPackageActive=value;
+      Company.packageEndsDate=date;
     });
     showSnackbar(context, Colors.cyan,Company.isPackageActive?"Package has been active":"Package has been in-active");
+  }
+  shareId()async{
+    await WhatsappShare.share(
+        text: Company.companyId,
+        phone: Company.whatsapp
+    );
   }
 }

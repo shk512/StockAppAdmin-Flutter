@@ -1,4 +1,4 @@
-enum Package{
+enum PackageType{
   Monthly,
   Yearly,
   Lifetime
