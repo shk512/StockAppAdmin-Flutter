@@ -1,7 +1,9 @@
+import 'dart:js_util';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:stock_admin/Model/company.dart';
+import 'package:stock_admin/Model/company_model.dart';
 import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/enum.dart';
 import 'package:stock_admin/utils/snackbar.dart';
@@ -14,27 +16,29 @@ class CompanyRegister extends StatefulWidget {
 }
 
 class _CompanyRegisterState extends State<CompanyRegister> {
+  TextEditingController companyName=TextEditingController();
+  TextEditingController city=TextEditingController();
+  TextEditingController phone=TextEditingController();
+  TextEditingController whatsapp=TextEditingController();
+  TextEditingController packageType=TextEditingController();
+  TextEditingController packageEndsDate=TextEditingController();
   bool isLoading = false;
-  TextEditingController city= TextEditingController();
-  TextEditingController contact=TextEditingController();
-  TextEditingController whatsApp=TextEditingController();
-  TextEditingController companyName= TextEditingController();
-  TextEditingController packageType= TextEditingController();
-  TextEditingController packageEndsDate = TextEditingController();
   PackageType package = PackageType.Monthly;
+  CompanyModel companyModel=newObject();
   final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Registeration"),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(CupertinoIcons.back), onPressed: () {
-          Navigator.pop(context);
-        },
+        leading: GestureDetector(
+          onTap: (){
+            Navigator.pop(context);
+          },
+          child: const Icon(CupertinoIcons.back,color: Colors.white,),
         ),
+        title: const Text("Registeration",style: TextStyle(color: Colors.white),),
+        centerTitle: true,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -51,9 +55,10 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                 const SizedBox(height: 20),
                 textFields(const Icon(Icons.location_city), "City", "City Name...", city),
                 const SizedBox(height: 20),
-                textFields(const Icon((Icons.phone)), "Contact","923001234567", contact),
+                textFields(const Icon((Icons.phone)), "Contact","923001234567", phone),
                 const SizedBox(height: 20),
-                textFields(const Icon(Icons.message), "Whatsapp", "923001234567", whatsApp),
+                textFields(const Icon(Icons.message), "Whatsapp", "923001234567", whatsapp),
+                const SizedBox(height: 20),
                 const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.start,),
@@ -65,21 +70,15 @@ class _CompanyRegisterState extends State<CompanyRegister> {
                 OutlinedButton(
                     onPressed: () {
                       if(package==PackageType.Yearly){
-                        setState(() {
-                          packageType.text="Yearly";
-                        });
+                        packageType.text="Yearly".toUpperCase();
                       }else if(package==PackageType.Monthly){
-                        setState(() {
-                          packageType.text="Monthly";
-                        });
+                        packageType.text="Monthly".toUpperCase();
                       }else if(package==PackageType.Lifetime){
-                        setState(() {
-                          packageType.text="LifeTime";
-                          packageEndsDate.text="";
-                        });
+                        packageType.text="LifeTime".toUpperCase();
                       }
                       signup();
-                    }, child: const Text("Register"))
+                    },
+                    child: const Text("Register"))
               ],
             ),),
         ),
@@ -133,12 +132,14 @@ class _CompanyRegisterState extends State<CompanyRegister> {
               initialDate: DateTime.now(),
               firstDate: DateTime(2000),
               lastDate: DateTime(2100));
-          if (pickedDate != null) {
+          if (pickedDate != null&&pickedDate.isAfter(DateTime.now())) {
             String formattedDate =
             DateFormat("dd-MM-yyyy").format(pickedDate);
             setState(() {
               packageEndsDate.text = formattedDate;
             });
+          }else{
+            showSnackbar(context, Colors.red, "Invalid Date");
           }
         });
   }
@@ -164,7 +165,18 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         isLoading=true;
       });
       String companyId=DateTime.now().microsecondsSinceEpoch.toString();
-      await DB(id: companyId).saveCompany(Company(contact.text,whatsApp.text,companyId,packageEndsDate.text, packageType.text, city.text, companyName.text).toJson()).then((value)async{
+      await DB(id: companyId).saveCompany(companyModel.toJson(
+          companyId: companyId,
+          companyName: companyName.text,
+          contact: phone.text,
+          whatsApp: whatsapp.text,
+          packageEndsDate: packageEndsDate.text,
+          packageType: packageType.text,
+          city: city.text,
+          wallet: 0,
+          area: [],
+          isPackageActive: true)
+      ).then((value)async{
         if(value){
           await DB(id: companyId).saveCompanyId().then((value){
             if(value){
@@ -176,6 +188,8 @@ class _CompanyRegisterState extends State<CompanyRegister> {
               });
               showSnackbar(context, Colors.red, "Error. Please Try Again!");
             }
+          }).onError((error, stackTrace){
+            showSnackbar(context, Colors.red, error.toString());
           });
 
         }else{

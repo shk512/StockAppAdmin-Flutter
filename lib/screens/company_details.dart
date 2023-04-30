@@ -1,7 +1,9 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
-import 'package:stock_admin/Model/company.dart';
+import 'package:stock_admin/Model/company_model.dart';
 import 'package:stock_admin/services/db.dart';
 import 'package:stock_admin/utils/snackbar.dart';
 import 'package:whatsapp_share2/whatsapp_share2.dart';
@@ -15,8 +17,9 @@ class CompanyDetails extends StatefulWidget {
 }
 
 class _CompanyDetailsState extends State<CompanyDetails> {
-  var mapData;
+  CompanyModel? companyModel;
   TextEditingController date=TextEditingController();
+  String address='';
   @override
   void initState() {
     super.initState();
@@ -25,9 +28,15 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   getCompanyDetails()async{
     await DB(id: widget.companyId).getCompanyDetails().then((val){
       setState(() {
-        Company.fromJson(val);
+        companyModel=CompanyModel.fromJson(val);
       });
     });
+    if(companyModel!.geoLocationModel.lat==0&&companyModel!.geoLocationModel.lng==0 || companyModel!.geoLocationModel.lat==null&&companyModel!.geoLocationModel.lng==null){
+      address="Not set";
+    }else{
+      List<Placemark> coordinates=await placemarkFromCoordinates(companyModel!.geoLocationModel.lat, companyModel!.geoLocationModel.lng);
+      address="${coordinates.reversed.last.street} ${coordinates.reversed.last.administrativeArea} ${coordinates.reversed.last.locality} ${coordinates.reversed.last.subLocality}";
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -42,27 +51,27 @@ class _CompanyDetailsState extends State<CompanyDetails> {
       ),
       body: SingleChildScrollView(
           child: Center(
-            child:Company.companyId!=""
+            child:companyModel!.companyName!=""
                 ?Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      displayFunction("ID", Company.companyId, const Icon(Icons.perm_identity)),
-                      displayFunction("Company Name",Company.companyName,const Icon(Icons.warehouse)),
-                      displayFunction("City",Company.city,const Icon(Icons.location_city_outlined)),
-                      displayFunction("Status", Company.isPackageActive?"Active":"InActive", const Icon(Icons.notifications_active)),
-                      displayFunction("Contact", Company.contact, const Icon(Icons.phone)),
-                      displayFunction("WhatsApp", Company.whatsapp, const Icon(Icons.chat)),
-                      displayFunction("Package",Company.packageType,const Icon(Icons.timer)),
-                      Company.packageType=="LifeTime"||Company.packageEndsDate==""?Container():displayFunction("Package Ends Date",Company.packageEndsDate,const Icon(Icons.date_range)),
+                      displayFunction("ID", companyModel!.companyId, const Icon(Icons.perm_identity)),
+                      displayFunction("Company Name",companyModel!.companyName,const Icon(Icons.warehouse)),
+                      displayFunction("City",companyModel!.city,const Icon(Icons.location_city_outlined)),
+                      displayFunction("Status", companyModel!.isPackageActive?"Active":"InActive", Icon(companyModel!.isPackageActive?Icons.check_circle:Icons.cancel,color: companyModel!.isPackageActive?Colors.green:Colors.red,)),
+                      displayFunction("Contact", companyModel!.contact, const Icon(Icons.phone)),
+                      displayFunction("WhatsApp", companyModel!.whatsApp, const Icon(Icons.chat)),
+                      displayFunction("Package",companyModel!.packageType,const Icon(Icons.timer)),
+                      companyModel!.packageType=="LifeTime"||companyModel!.packageEndsDate==""?Container():displayFunction("Package Ends Date",companyModel!.packageEndsDate,const Icon(Icons.date_range)),
                       const SizedBox(height: 20),
                       ElevatedButton(
                           onPressed: ()async{
-                            if(!Company.isPackageActive&&Company.packageType=="LifeTime"){
+                            if(!companyModel!.isPackageActive&&companyModel!.packageType=="LifeTime"){
                               updatePackage(true, "");
-                            } else if(!Company.isPackageActive) {
+                            } else if(!companyModel!.isPackageActive) {
                               DateTime? datePicker = await showDatePicker(
                               context: context,
                               initialDate: DateTime.now(),
@@ -78,7 +87,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                         }else{
                           updatePackage(false, "");
                         }
-                        }, child: Text(Company.isPackageActive?"Turn Off Membership":"Turn On Membership")),
+                        }, child: Text(companyModel!.isPackageActive?"Turn Off Membership":"Turn On Membership")),
                       const SizedBox(height: 20,),
                       ElevatedButton(onPressed: (){
                         shareId();
@@ -102,15 +111,15 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   updatePackage(bool value,String date)async{
     await DB(id: widget.companyId).updatePackageStatus(value,date);
     setState(() {
-      Company.isPackageActive=value;
-      Company.packageEndsDate=date;
+      companyModel!.isPackageActive=value;
+      companyModel!.packageEndsDate=date;
     });
-    showSnackbar(context, Colors.cyan,Company.isPackageActive?"Package has been active":"Package has been in-active");
+    showSnackbar(context, Colors.cyan,companyModel!.isPackageActive?"Package has been active":"Package has been in-active");
   }
   shareId()async{
     await WhatsappShare.share(
-        text: Company.companyId,
-        phone: Company.whatsapp
+        text: companyModel!.companyId,
+        phone: companyModel!.whatsApp
     );
   }
 }

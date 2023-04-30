@@ -33,15 +33,15 @@ class _DashboardState extends State<Dashboard> {
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text("Company"),
+        icon: const Icon(Icons.add,color: Colors.white,),
+        label: const Text("Company",style: TextStyle(color: Colors.white),),
         onPressed: (){
           Navigator.pushNamed(context, Routes.companyRegister);
         },
       ),
       body: StreamBuilder(
         stream: company,
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        builder: (context, AsyncSnapshot snapshot) {
           if(snapshot.hasError){
             return const Center(
               child: Text("Error"),

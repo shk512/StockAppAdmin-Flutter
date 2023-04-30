@@ -14,6 +14,11 @@ class DB{
     return true;
   }
 
+  //getCompany
+  getCompany() {
+    return companyCollection.snapshots();
+  }
+
   //Save Company ID in List
   Future saveCompanyId()async{
     await companyArrayCollection.doc("adminArray").update({
