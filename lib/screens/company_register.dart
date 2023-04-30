@@ -1,5 +1,3 @@
-import 'dart:js_util';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -24,7 +22,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
   TextEditingController packageEndsDate=TextEditingController();
   bool isLoading = false;
   PackageType package = PackageType.Monthly;
-  CompanyModel companyModel=newObject();
+  CompanyModel? companyModel;
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -165,17 +163,37 @@ class _CompanyRegisterState extends State<CompanyRegister> {
         isLoading=true;
       });
       String companyId=DateTime.now().microsecondsSinceEpoch.toString();
-      await DB(id: companyId).saveCompany(companyModel.toJson(
-          companyId: companyId,
-          companyName: companyName.text,
-          contact: phone.text,
-          whatsApp: whatsapp.text,
-          packageEndsDate: packageEndsDate.text,
-          packageType: packageType.text,
-          city: city.text,
-          wallet: 0,
-          area: [],
-          isPackageActive: true)
+      await DB(id: companyId).saveCompany(
+        CompanyModel.toJson(
+            companyId: companyId,
+            companyName: companyName.text,
+            contact: phone.text,
+            whatsApp: whatsapp.text,
+            packageEndsDate: packageEndsDate.text,
+            packageType: packageType.text,
+            city: city.text,
+            wallet: 0,
+            area: [],
+            isPackageActive: true,
+            lat: null, lng: null
+        )
+        /*
+          {
+            "companyId": companyId,
+            "companyName":companyName.text,
+            "isPackageActive":true,
+            "contact":phone.text,
+            "packageEndsDate":packageEndsDate.text,
+            "area":[],
+            "wallet":0,
+            "whatsApp":whatsapp.text,
+            "packageType":packageType.text,
+            "city":city.text,
+            "geoLocation":{
+              "lat":0,
+              "lng":0
+            }
+          }*/
       ).then((value)async{
         if(value){
           await DB(id: companyId).saveCompanyId().then((value){

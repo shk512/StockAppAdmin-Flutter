@@ -3,85 +3,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'geolocation_model.dart';
 
 class CompanyModel{
-  String _companyId='';
-  String _companyName='';
-  String _contact='';
-  String _packageEndsDate='';
-  String _packageType='';
-  String _whatsApp='';
-  String _city='';
-  num _wallet=0;
-  bool _isPackageActive=false;
-  List _area=[];
-  GeoLocationModel _geoLocationModel=newObject();
+  static String companyId='';
+  static String companyName='';
+  static String contact='';
+  static String packageEndsDate='';
+  static String packageType='';
+  static String whatsApp='';
+  static String city='';
+  static num wallet=0;
+  static bool isPackageActive=false;
+  static List area=[];
 
-  GeoLocationModel get geoLocationModel => _geoLocationModel;
-
-  set geoLocationModel(GeoLocationModel value) {
-    _geoLocationModel = value;
+  static fromJson(DocumentSnapshot snapshot){
+      companyId=snapshot['companyId'];
+      contact=snapshot['contact'];
+      isPackageActive= snapshot['isPackageActive'];
+      packageEndsDate= snapshot['packageEndsDate'];
+      companyName= snapshot['companyName'];
+      area=snapshot['area'];
+      wallet=snapshot['wallet'];
+      packageType=snapshot["packageType"];
+      whatsApp=snapshot["whatsApp"];
+      city=snapshot["city"];
+      var object=snapshot["geoLocation"];
+      GeoLocationModel.lat=object["lat"];
+      GeoLocationModel.lng=object["lng"];;
   }
 
-  String get city => _city;
-
-  set city(String value) {
-    _city = value;
-  }
-
-  String get packageType => _packageType;
-
-  set packageType(String value) {
-    _packageType = value;
-  }
-
-  num get wallet => _wallet;
-
-  set wallet(num value) {
-    _wallet = value;
-  }
-
-  String get companyId => _companyId;
-
-  set companyId(String value) {
-    _companyId = value;
-  }
-
-  String get companyName => _companyName;
-
-  set companyName(String value) {
-    _companyName = value;
-  }
-
-  String get contact => _contact;
-
-  set contact(String value) {
-    _contact = value;
-  }
-
-  String get packageEndsDate => _packageEndsDate;
-
-  set packageEndsDate(String value) {
-    _packageEndsDate = value;
-  }
-
-  bool get isPackageActive => _isPackageActive;
-
-  set isPackageActive(bool value) {
-    _isPackageActive = value;
-  }
-
-  List get area => _area;
-
-  set area(List value) {
-    _area = value;
-  }
-
-  String get whatsApp => _whatsApp;
-
-  set whatsApp(String value) {
-    _whatsApp = value;
-  }
-
-  Map<String,dynamic> toJson({
+  static Map<String,dynamic> toJson({
     required String companyId,
     required String companyName,
     required String contact,
@@ -91,7 +40,9 @@ class CompanyModel{
     required String city,
     required num wallet,
     required List area,
-    required bool isPackageActive
+    required bool isPackageActive,
+    required var lat,
+    required var lng
     })
   {
     return<String,dynamic>{
@@ -106,25 +57,9 @@ class CompanyModel{
       "packageType":packageType,
       "city":city,
       "geoLocation":{
-        "lat":geoLocationModel.lat,
-        "lng":geoLocationModel.lng
+        "lat":lat,
+        "lng":lng
       }
     };
   }
-
-  CompanyModel.fromJson(DocumentSnapshot? snapshot){
-    companyId=snapshot!['companyId'];
-    contact=snapshot['contact'];
-    isPackageActive= snapshot['isPackageActive'];
-    packageEndsDate= snapshot['packageEndsDate'];
-    companyName= snapshot['companyName'];
-    area=snapshot['area'];
-    wallet=snapshot['wallet'];
-    packageType=snapshot["packageType"];
-    whatsApp=snapshot["whatsApp"];
-    city=snapshot["city"];
-    geoLocationModel.lat=snapshot["geolocation"]["lat"];
-    geoLocationModel.lng=snapshot["geolocation"]["lng"];
-  }
-
 }
