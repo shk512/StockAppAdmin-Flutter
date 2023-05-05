@@ -177,23 +177,6 @@ class _CompanyRegisterState extends State<CompanyRegister> {
             isPackageActive: true,
             lat: null, lng: null
         )
-        /*
-          {
-            "companyId": companyId,
-            "companyName":companyName.text,
-            "isPackageActive":true,
-            "contact":phone.text,
-            "packageEndsDate":packageEndsDate.text,
-            "area":[],
-            "wallet":0,
-            "whatsApp":whatsapp.text,
-            "packageType":packageType.text,
-            "city":city.text,
-            "geoLocation":{
-              "lat":0,
-              "lng":0
-            }
-          }*/
       ).then((value)async{
         if(value){
           await DB(id: companyId).saveCompanyId().then((value){
