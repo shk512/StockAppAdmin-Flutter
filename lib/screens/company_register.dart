@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geopoint/geopoint.dart';
 import 'package:intl/intl.dart';
 import 'package:stock_admin/Model/company_model.dart';
-import 'package:stock_admin/services/db.dart';
+import 'package:stock_admin/Widget/text_field.dart';
+import 'package:stock_admin/services/company_db.dart';
 import 'package:stock_admin/utils/enum.dart';
 import 'package:stock_admin/utils/snackbar.dart';
+
+import '../Widget/num_field.dart';
 
 class CompanyRegister extends StatefulWidget {
   const CompanyRegister({Key? key}) : super(key: key);
@@ -35,7 +39,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
           },
           child: const Icon(CupertinoIcons.back,color: Colors.white,),
         ),
-        title: const Text("Registeration",style: TextStyle(color: Colors.white),),
+        title: const Text("Registration",style: TextStyle(color: Colors.white),),
         centerTitle: true,
       ),
       body: isLoading
@@ -47,24 +51,18 @@ class _CompanyRegisterState extends State<CompanyRegister> {
             key: formKey,
             child: Column(
               children: [
-                textFields(
-                    const Icon(Icons.warehouse), "Company Name", "e.g. Candy Land",
-                    companyName),
-                const SizedBox(height: 20),
-                textFields(const Icon(Icons.location_city), "City", "City Name...", city),
-                const SizedBox(height: 20),
-                textFields(const Icon((Icons.phone)), "Contact","923001234567", phone),
-                const SizedBox(height: 20),
-                textFields(const Icon(Icons.message), "Whatsapp", "923001234567", whatsapp),
-                const SizedBox(height: 20),
+                TxtField(labelTxt: "Company Name", hintTxt: "Candy Land", ctrl: companyName, icon: Icon(Icons.warehouse_outlined)),
+                TxtField(labelTxt: "City", hintTxt: "City Name", ctrl: city, icon: Icon(Icons.location_city_outlined)),
+                NumField(labelTxt: "Contact", hintTxt: "03001234567", ctrl: phone, icon: Icon(Icons.phone)),
+                NumField(icon: Icon(Icons.message), ctrl: whatsapp, hintTxt: "03001234567", labelTxt: "Whatsapp"),
                 const Text("Select Package",
                   style: TextStyle(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.start,),
                 radioButtons("Monthly", PackageType.Monthly),
                 radioButtons("Yearly", PackageType.Yearly),
                 radioButtons("Lifetime", PackageType.Lifetime),
-                package == PackageType.Lifetime ? Container() : date(),
-                const SizedBox(height: 40),
+                package == PackageType.Lifetime ? const SizedBox() : date(),
+                const SizedBox(height: 20),
                 OutlinedButton(
                     onPressed: () {
                       if(package==PackageType.Yearly){
@@ -81,39 +79,6 @@ class _CompanyRegisterState extends State<CompanyRegister> {
             ),),
         ),
       ),
-    );
-  }
-
-  Widget textFields(Icon icon, String labelName, String tipName,
-      TextEditingController control) {
-    return Row(
-      children: [
-        icon,
-        const SizedBox(
-          width: 20,
-        ),
-        Expanded(
-          child: TextFormField(
-            controller: control,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: labelName,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                letterSpacing: 1,
-              ),
-              hintText: tipName,
-            ),
-            validator: (val) {
-              return val!.isNotEmpty?null:"Invalid";
-            }
-          ),
-        ),
-        const SizedBox(
-          width: 20,
-        ),
-      ],
     );
   }
   Widget date() {
@@ -158,46 +123,30 @@ class _CompanyRegisterState extends State<CompanyRegister> {
     );
   }
   signup() async{
+    CompanyModel companyModel=CompanyModel();
     if(formKey.currentState!.validate()){
       setState(() {
         isLoading=true;
       });
       String companyId=DateTime.now().microsecondsSinceEpoch.toString();
-      await DB(id: companyId).saveCompany(
-        CompanyModel.toJson(
-            companyId: companyId,
-            companyName: companyName.text,
-            contact: phone.text,
-            whatsApp: whatsapp.text,
-            packageEndsDate: packageEndsDate.text,
-            packageType: packageType.text,
-            city: city.text,
-            wallet: 0,
-            area: [],
-            isPackageActive: true,
-            lat: null, lng: null
-        )
-      ).then((value)async{
-        if(value){
-          await DB(id: companyId).saveCompanyId().then((value){
-            if(value){
-              Navigator.pop(context);
-              showSnackbar(context, Colors.cyan, "Registered Successfully!");
-            }else{
-              setState(() {
-                isLoading=false;
-              });
-              showSnackbar(context, Colors.red, "Error. Please Try Again!");
-            }
-          }).onError((error, stackTrace){
-            showSnackbar(context, Colors.red, error.toString());
-          });
+      companyModel.companyId=companyId;
+      companyModel.companyName=companyName.text;
+      companyModel.city=city.text;
+      companyModel.packageEndsDate=packageEndsDate.text;
+      companyModel.isPackageActive=true;
+      companyModel.packageType=packageType.text;
+      companyModel.contact=phone.text;
+      companyModel.whatsApp=whatsapp.text;
 
+      await CompanyDb(id: companyId).saveCompany(companyModel.toJson()).then((value)async{
+        if(value==true){
+          Navigator.pop(context);
+          showSnackbar(context, Colors.green.shade300, "Registered Successfully!");
         }else{
           setState(() {
             isLoading=false;
           });
-          showSnackbar(context, Colors.red, "Error. Please Try Again!");
+          showSnackbar(context, Colors.red.shade400, "Error. Please Try Again!");
         }
       });
     }

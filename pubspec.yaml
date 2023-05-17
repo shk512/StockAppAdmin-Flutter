@@ -38,16 +38,31 @@ dependencies:
   cupertino_icons: ^1.0.5
   firebase_core: ^2.2.0
   cloud_firestore: ^4.0.5
-  whatsapp_share2: ^2.0.2
   intl: ^0.17.0
-  geolocator: ^9.0.2
-  geocoding: ^2.1.0
-  uuid: ^3.0.7
-  http:
+  url_launcher: ^6.1.10
+  rename: ^2.1.1
+  geopoint: ^1.0.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "logo/app_logo.png"
+  web:
+    generate: true
+    image_path: "logo/app_logo.png"
+    background_color: "#FFFFFF"
+    theme_color: "#00FFFF"
+  windows:
+    generate: true
+    image_path: "logo/app_logo.png"
+    icon_size: 48
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -68,8 +83,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - logo/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

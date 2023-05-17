@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:stock_admin/Model/company_model.dart';
-import 'package:stock_admin/Model/geolocation_model.dart';
-import 'package:stock_admin/services/db.dart';
+import 'package:stock_admin/screens/error.dart';
+import 'package:stock_admin/services/company_db.dart';
 import 'package:stock_admin/utils/snackbar.dart';
-import 'package:whatsapp_share2/whatsapp_share2.dart';
+
+import '../Widget/row_info_display.dart';
 
 class CompanyDetails extends StatefulWidget {
   final String companyId;
@@ -17,119 +17,141 @@ class CompanyDetails extends StatefulWidget {
 }
 
 class _CompanyDetailsState extends State<CompanyDetails> {
-  TextEditingController date=TextEditingController();
+  TextEditingController packageEndsDate=TextEditingController();
+  CompanyModel _companyModel=CompanyModel();
   String address='';
+
   @override
   void initState() {
     super.initState();
     getCompanyDetails();
   }
+
   getCompanyDetails()async{
-    await DB(id: widget.companyId).getCompanyDetails().then((val){
+    await CompanyDb(id: widget.companyId).getCompanyData().then((snapshot){
       setState(() {
-        CompanyModel.fromJson(val);
+        _companyModel.imageUrl=snapshot["imageUrl"];
+        _companyModel.companyId=snapshot['companyId'];
+        _companyModel.contact=snapshot['contact'];
+        _companyModel.isPackageActive= snapshot['isPackageActive'];
+        _companyModel.packageEndsDate= snapshot['packageEndsDate'];
+        _companyModel.companyName= snapshot['companyName'];
+        _companyModel.packageType=snapshot["packageType"];
+        _companyModel.whatsApp=snapshot["whatsApp"];
+        _companyModel.city=snapshot["city"];
       });
-    });
-    print(GeoLocationModel.lat);
-    print(GeoLocationModel.lng);
-    if(GeoLocationModel.lat==0&&GeoLocationModel.lng==0 || GeoLocationModel.lat==null&&GeoLocationModel.lng==null){
-      address="Not set";
-    }else{
-      List<Placemark> coordinates=await placemarkFromCoordinates(GeoLocationModel.lat, GeoLocationModel.lng);
-      address="${coordinates.reversed.last.country}";
-    }
+    }).onError((error, stackTrace) => Navigator.push(context, MaterialPageRoute(builder: (context)=>ErrorScreen(error: error.toString()))));
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Details",style:  TextStyle(color: Colors.white,fontWeight: FontWeight.bold,letterSpacing: 2),),
-        centerTitle: true,
-        elevation: 0,
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-        }, icon: const Icon(CupertinoIcons.back,color: Colors.white,)),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.back,color: Colors.white,),
+        ),
+        title:  Text(_companyModel.companyName,style: const TextStyle(color: Colors.white),),
       ),
       body: SingleChildScrollView(
-          child: Center(
-            child:CompanyModel.companyName!=""
-                ?Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      displayFunction("Status", CompanyModel.isPackageActive?"Active":"InActive", Icon(CompanyModel.isPackageActive?Icons.check_circle:Icons.cancel,color: CompanyModel.isPackageActive?Colors.green:Colors.red,)),
-                      const SizedBox(height: 5),
-                      CompanyModel.packageType=="LifeTime".toUpperCase()||CompanyModel.packageEndsDate==""?Container():displayFunction("Package Ends Date",CompanyModel.packageEndsDate,const Icon(Icons.date_range)),
-                      const SizedBox(height: 5),
-                      displayFunction("ID", CompanyModel.companyId, const Icon(Icons.perm_identity)),
-                      const SizedBox(height: 5),
-                      displayFunction("Company Name",CompanyModel.companyName,const Icon(Icons.warehouse)),
-                      const SizedBox(height: 5),
-                      displayFunction("Address",address,const Icon(Icons.pin_drop)),
-                      const SizedBox(height: 5),
-                      displayFunction("City",CompanyModel.city,const Icon(Icons.location_city_outlined)),
-                      const SizedBox(height: 5),
-                      displayFunction("Contact", CompanyModel.contact, const Icon(Icons.phone)),
-                      const SizedBox(height: 5),
-                      displayFunction("WhatsApp", CompanyModel.whatsApp, const Icon(Icons.chat)),
-                      const SizedBox(height: 5),
-                      displayFunction("Package",CompanyModel.packageType,const Icon(Icons.timer)),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                          onPressed: ()async{
-                            if(!CompanyModel.isPackageActive&&CompanyModel.packageType=="LifeTime".toUpperCase()){
-                              updatePackage(true, "");
-                            } else if(!CompanyModel.isPackageActive) {
-                              DateTime? datePicker = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100));
-                                if (datePicker != null) {
-                                  setState(() {
-                                    date.text =
-                                    DateFormat("dd-MM-yyyy").format(datePicker);
-                                  });
-                             updatePackage(true, date.text);
-                          }
-                        }else{
-                          updatePackage(false, "");
-                        }
-                        }, child: Text(CompanyModel.isPackageActive?"Turn Off Membership":"Turn On Membership")),
-                      const SizedBox(height: 20,),
-                      ElevatedButton(onPressed: (){
-                        shareId();
-                      }, child: const Text("Share Id"))
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _companyModel.imageUrl.isNotEmpty
+                  ?CircleAvatar(
+                    backgroundImage: NetworkImage(_companyModel.imageUrl),
+                    radius: 100,
+              )
+                    :Icon(Icons.image,size: 70,),
+              const SizedBox(height: 10,),
+              RowInfoDisplay(value: _companyModel.companyId, label: "ID"),
+              RowInfoDisplay(label: "Name", value: _companyModel.companyName),
+              RowInfoDisplay(label: "Status", value:_companyModel.isPackageActive?"Active":"InActive"),
+              RowInfoDisplay(label: "Package", value: _companyModel.packageType),
+              _companyModel.packageEndsDate.isNotEmpty
+                  ?RowInfoDisplay(label: "Package Ends Date", value:_companyModel.packageEndsDate)
+                  :const SizedBox(),
+              RowInfoDisplay(label: "City", value: _companyModel.city),
+              RowInfoDisplay(label: "Contact", value: _companyModel.contact),
+              const SizedBox(height: 20,),
+              ElevatedButton(
+                  onPressed: (){
+                    if(_companyModel.isPackageActive){
+                      showWarningDialogue();
+                    }else{
+                      date();
+                    }
+                  },
+                  child: Text(_companyModel.isPackageActive?"Inactive":"Active")),
+
             ],
           ),
-                )
-          :const CircularProgressIndicator()),
         ),
+      ),
     );
   }
-  Widget displayFunction(String title, String value, Icon icon){
-    return Row(
-      children: [
-        Expanded(flex:1,child: icon),
-        Expanded(flex:2,child: Text(title,style: const TextStyle(fontWeight: FontWeight.bold),)),
-        Expanded(flex:2,child: Text(value)),
-      ],
-    );
+  showWarningDialogue(){
+    return showDialog(
+        context: context,
+        builder: (context){
+          return AlertDialog(
+            title: Text("Warning"),
+            content: Text("Are you sure to inactive ${_companyModel.companyName}"),
+            actions: [
+              IconButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  }, icon: Icon(Icons.cancel,color: Colors.red,)),
+              IconButton(
+                  onPressed: (){
+                    updatePackageStatus(false, "");
+                  }, icon: Icon(Icons.check_circle_rounded,color: Colors.green,)),
+            ],
+          );
+        });
   }
-  updatePackage(bool value,String date)async{
-    await DB(id: widget.companyId).updatePackageStatus(value,date);
-    setState(() {
-      CompanyModel.isPackageActive=value;
-      CompanyModel.packageEndsDate=date;
+  updatePackageStatus(bool value, String date)async{
+    await CompanyDb(id: _companyModel.companyId).updateCompany({
+      "packageEndsDate": date,
+      "isPackageActive": value
+    }).then((value){
+      showSnackbar(context, Colors.green.shade300, "Updated");
+    }).onError((error, stackTrace){
+      Navigator.push(context, MaterialPageRoute(builder: (context)=>ErrorScreen(error: error.toString())));
     });
-    showSnackbar(context, Colors.cyan,CompanyModel.isPackageActive?"Package has been active":"Package has been in-active");
   }
   shareId()async{
-    await WhatsappShare.share(
-        text: CompanyModel.companyId,
-        phone: CompanyModel.whatsApp
-    );
+
+  }
+  Widget date() {
+    return TextField(
+        decoration: const InputDecoration(
+          icon: Icon(Icons.calendar_month),
+          labelText: "Package Ends Date",
+        ),
+        readOnly: true,
+        controller: packageEndsDate,
+        onTap: () async {
+          DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100));
+          if (pickedDate != null && pickedDate.isAfter(DateTime.now())) {
+            String formattedDate =
+            DateFormat("dd-MM-yyyy").format(pickedDate);
+            setState(() {
+              packageEndsDate.text = formattedDate;
+            });
+            updatePackageStatus(true, packageEndsDate.text);
+          }else{
+            showSnackbar(context, Colors.red, "Invalid Date");
+          }
+        });
   }
 }
