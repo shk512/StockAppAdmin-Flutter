@@ -55,20 +55,15 @@ class _CompanyDetailsState extends State<CompanyDetails> {
         ),
         title:  Text(_companyModel.companyName,style: const TextStyle(color: Colors.white),),
       ),
-      body: SingleChildScrollView(
+      body: _companyModel.companyName.isEmpty
+          ? const Center(child: CircularProgressIndicator(),)
+          :SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _companyModel.imageUrl.isNotEmpty
-                  ?CircleAvatar(
-                    backgroundImage: NetworkImage(_companyModel.imageUrl),
-                    radius: 100,
-              )
-                    :Icon(Icons.image,size: 70,),
-              const SizedBox(height: 10,),
               RowInfoDisplay(value: _companyModel.companyId, label: "ID"),
               RowInfoDisplay(label: "Name", value: _companyModel.companyName),
               RowInfoDisplay(label: "Status", value:_companyModel.isPackageActive?"Active":"InActive"),
@@ -109,6 +104,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                   }, icon: Icon(Icons.cancel,color: Colors.red,)),
               IconButton(
                   onPressed: (){
+                    Navigator.pop(context);
                     updatePackageStatus(false, "");
                   }, icon: Icon(Icons.check_circle_rounded,color: Colors.green,)),
             ],
@@ -121,6 +117,9 @@ class _CompanyDetailsState extends State<CompanyDetails> {
       "isPackageActive": value
     }).then((value){
       showSnackbar(context, Colors.green.shade300, "Updated");
+      setState(() {
+        getCompanyDetails();
+      });
     }).onError((error, stackTrace){
       Navigator.push(context, MaterialPageRoute(builder: (context)=>ErrorScreen(error: error.toString())));
     });
@@ -128,30 +127,22 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   shareId()async{
 
   }
-  Widget date() {
-    return TextField(
-        decoration: const InputDecoration(
-          icon: Icon(Icons.calendar_month),
-          labelText: "Package Ends Date",
-        ),
-        readOnly: true,
-        controller: packageEndsDate,
-        onTap: () async {
-          DateTime? pickedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100));
-          if (pickedDate != null && pickedDate.isAfter(DateTime.now())) {
-            String formattedDate =
-            DateFormat("dd-MM-yyyy").format(pickedDate);
-            setState(() {
-              packageEndsDate.text = formattedDate;
-            });
-            updatePackageStatus(true, packageEndsDate.text);
-          }else{
-            showSnackbar(context, Colors.red, "Invalid Date");
-          }
-        });
+  date() async{
+    DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100)
+    );
+    if (pickedDate != null && pickedDate.isAfter(DateTime.now())) {
+      String formattedDate =
+      DateFormat("dd-MM-yyyy").format(pickedDate);
+      setState(() {
+        packageEndsDate.text = formattedDate;
+      });
+      updatePackageStatus(true, packageEndsDate.text);
+    }else{
+      showSnackbar(context, Colors.red, "Invalid Date");
+    }
   }
 }

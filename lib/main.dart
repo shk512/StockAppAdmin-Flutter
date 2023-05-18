@@ -22,13 +22,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner:false,
-      title: 'App Admin',
+      title: 'Admin',
       theme: ThemeData(
         primarySwatch: Colors.lime,
       ),
-      home: Dashboard(),
+      initialRoute: Routes.dashboard,
       routes: {
-        Routes.companyRegister:(context)=>CompanyRegister(),
+        Routes.companyRegister:(context)=>const CompanyRegister(),
+        Routes.dashboard:(context)=> const Dashboard()
       },
     );
   }
