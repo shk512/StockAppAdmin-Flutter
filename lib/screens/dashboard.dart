@@ -33,7 +33,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("ADMIN",style:  TextStyle(color: Colors.white,fontWeight: FontWeight.bold,letterSpacing: 2),),
+        title: const Text("ADMIN",style: TextStyle(fontWeight: FontWeight.bold,letterSpacing: 2),),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(

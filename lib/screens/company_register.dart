@@ -37,9 +37,9 @@ class _CompanyRegisterState extends State<CompanyRegister> {
           onTap: (){
             Navigator.pop(context);
           },
-          child: const Icon(CupertinoIcons.back,color: Colors.white,),
+          child: const Icon(CupertinoIcons.back),
         ),
-        title: const Text("Registration",style: TextStyle(color: Colors.white),),
+        title: const Text("Registration"),
         centerTitle: true,
       ),
       body: isLoading
@@ -97,7 +97,7 @@ class _CompanyRegisterState extends State<CompanyRegister> {
               lastDate: DateTime(2100));
           if (pickedDate != null&&pickedDate.isAfter(DateTime.now())) {
             String formattedDate =
-            DateFormat("dd-MM-yyyy").format(pickedDate);
+            DateFormat("yyyy-MM-dd").format(pickedDate);
             setState(() {
               packageEndsDate.text = formattedDate;
             });

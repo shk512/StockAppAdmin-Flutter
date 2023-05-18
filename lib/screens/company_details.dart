@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:stock_admin/Model/company_model.dart';
 import 'package:stock_admin/screens/error.dart';
 import 'package:stock_admin/services/company_db.dart';
 import 'package:stock_admin/utils/snackbar.dart';
 
 import '../Widget/row_info_display.dart';
+import '../utils/enum.dart';
+import 'edit_company.dart';
 
 class CompanyDetails extends StatefulWidget {
   final String companyId;
@@ -19,6 +20,7 @@ class CompanyDetails extends StatefulWidget {
 class _CompanyDetailsState extends State<CompanyDetails> {
   TextEditingController packageEndsDate=TextEditingController();
   CompanyModel _companyModel=CompanyModel();
+  PackageType package = PackageType.Monthly;
   String address='';
 
   @override
@@ -51,9 +53,9 @@ class _CompanyDetailsState extends State<CompanyDetails> {
           onPressed: (){
             Navigator.pop(context);
           },
-          icon: const Icon(CupertinoIcons.back,color: Colors.white,),
+          icon: const Icon(CupertinoIcons.back,),
         ),
-        title:  Text(_companyModel.companyName,style: const TextStyle(color: Colors.white),),
+        title:  Text(_companyModel.companyName),
       ),
       body: _companyModel.companyName.isEmpty
           ? const Center(child: CircularProgressIndicator(),)
@@ -64,6 +66,12 @@ class _CompanyDetailsState extends State<CompanyDetails> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              _companyModel.imageUrl.isEmpty
+                  ?Icon(Icons.image,size: 70,)
+                  :CircleAvatar(
+                radius: 100,
+                backgroundImage: NetworkImage(_companyModel.imageUrl)
+              ),
               RowInfoDisplay(value: _companyModel.companyId, label: "ID"),
               RowInfoDisplay(label: "Name", value: _companyModel.companyName),
               RowInfoDisplay(label: "Status", value:_companyModel.isPackageActive?"Active":"InActive"),
@@ -79,7 +87,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                     if(_companyModel.isPackageActive){
                       showWarningDialogue();
                     }else{
-                      date();
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>EditCompany(companyId: _companyModel.companyId,)));
                     }
                   },
                   child: Text(_companyModel.isPackageActive?"Inactive":"Active")),
@@ -90,6 +98,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
       ),
     );
   }
+
   showWarningDialogue(){
     return showDialog(
         context: context,
@@ -114,7 +123,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   updatePackageStatus(bool value, String date)async{
     await CompanyDb(id: _companyModel.companyId).updateCompany({
       "packageEndsDate": date,
-      "isPackageActive": value
+      "isPackageActive": value,
     }).then((value){
       showSnackbar(context, Colors.green.shade300, "Updated");
       setState(() {
@@ -126,23 +135,5 @@ class _CompanyDetailsState extends State<CompanyDetails> {
   }
   shareId()async{
 
-  }
-  date() async{
-    DateTime? pickedDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100)
-    );
-    if (pickedDate != null && pickedDate.isAfter(DateTime.now())) {
-      String formattedDate =
-      DateFormat("dd-MM-yyyy").format(pickedDate);
-      setState(() {
-        packageEndsDate.text = formattedDate;
-      });
-      updatePackageStatus(true, packageEndsDate.text);
-    }else{
-      showSnackbar(context, Colors.red, "Invalid Date");
-    }
   }
 }
